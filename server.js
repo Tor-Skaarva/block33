@@ -57,16 +57,36 @@ app.post("/api/employees", async (req, res) => {
 });
 
 //employee delete, params (id)
-app.delete("/api/employee/:id", async (req, res) => {
+app.delete("/api/employees/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const SQL = `
           DELETE FROM employees WHERE id = $1
       `;
-    await client.query(SQL, [id]);
+    const response = await client.query(SQL, [id]);
     res.sendStatus(204);
   } catch (error) {
     res.status(400).send("You've broken me");
+  }
+});
+
+//employee put, params name and department id
+app.put("/api/employees/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, department_id } = req.body;
+    const SQL = `
+            UPDATE employees
+            SET name = $1,
+            department_id = $2
+            WHERE id = $3
+            RETURNING *
+        `;
+    const response = await client.query(SQL, [name, department_id, id]);
+    res.status(200).json(response.rows[0]);
+  } catch (error) {
+    console.log(error);
+    res.status(400).send(error);
   }
 });
 
